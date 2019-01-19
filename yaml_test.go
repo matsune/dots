@@ -9,25 +9,38 @@ func Test_parseYaml(t *testing.T) {
 	tests := []struct {
 		name    string
 		str     string
-		want    []target
+		want    yamlFile
 		wantErr bool
 	}{
 		{
-			name: "valid format",
+			name: "parse targets",
 			str: `
 targets: 
   - dst: ~/.vimrc
     name: vimrc
     file: .vimrc
 `,
-			want: []target{
-				target{
-					Name: "vimrc",
-					File: ".vimrc",
-					Dst:  "~/.vimrc",
+			want: yamlFile{
+				Targets: []target{
+					target{
+						Name: "vimrc",
+						File: ".vimrc",
+						Dst:  "~/.vimrc",
+					},
 				},
 			},
-			wantErr: false,
+		},
+		{
+			name: "parse sub",
+			str: `
+targets:
+sub:
+  - a
+  - ./b
+`,
+			want: yamlFile{
+				Sub: []string{"a", "./b"},
+			},
 		},
 		// - fail tests
 		{

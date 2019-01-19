@@ -5,13 +5,16 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-func parseYaml(str []byte) ([]target, error) {
-	var y struct {
-		Targets []target `yaml:"targets"`
-	}
+type yamlFile struct {
+	Targets []target `yaml:"targets,omitempty"`
+	Sub     []string `yaml:"sub,omitempty"`
+}
+
+func parseYaml(str []byte) (yamlFile, error) {
+	var y yamlFile
 	err := yaml.Unmarshal(str, &y)
 	if err != nil {
-		return nil, err
+		return yamlFile{}, err
 	}
 
 	eg := errgroup.Group{}
@@ -22,7 +25,7 @@ func parseYaml(str []byte) ([]target, error) {
 	}
 	err = eg.Wait()
 	if err != nil {
-		return nil, err
+		return yamlFile{}, err
 	}
-	return y.Targets, nil
+	return y, nil
 }

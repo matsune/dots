@@ -1,0 +1,6 @@
+targets:
+  - name: zshrc
+    dst: ~/go/src/github.com/matsune/dots/.zshrc
+    file: .zshrc
+sub:
+  - ./zprofile

@@ -18,7 +18,7 @@ func Run(c cmd) int {
 	r = &localResolver{
 		repo: c.Repo,
 	}
-	ts, err := r.ReadYaml()
+	ts, err := r.ReadTargets()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return exitError

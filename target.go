@@ -6,6 +6,7 @@ type target struct {
 	Name string `yaml:"name"`
 	File string `yaml:"file"`
 	Dst  string `yaml:"dst"`
+	Sub  string
 }
 
 func (t target) validate() error {

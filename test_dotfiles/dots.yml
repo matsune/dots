@@ -1,0 +1,6 @@
+targets:
+  - name: vimrc
+    file: ./.vimrc
+    dst: /tmp/dots.vimrc
+sub:
+  - ./zsh
