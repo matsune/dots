@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestParseYamlSuccess(t *testing.T) {
+func TestparseYamlSuccess(t *testing.T) {
 
 	type test struct {
 		str    string
@@ -31,7 +31,7 @@ targets:
 	}
 
 	for _, c := range successTests {
-		res, err := ParseYaml(c.str)
+		res, err := parseYaml([]byte(c.str))
 		if err != nil {
 			t.Error(err)
 		} else {
@@ -42,7 +42,7 @@ targets:
 	}
 }
 
-func TestParseYamlFail(t *testing.T) {
+func TestparseYamlFail(t *testing.T) {
 
 	failTests := map[string]string{
 		"no name": `
@@ -72,7 +72,7 @@ targets:
 	}
 
 	for k, c := range failTests {
-		res, err := ParseYaml(c)
+		res, err := parseYaml([]byte(c))
 		if err == nil {
 			t.Errorf("[test %s] expected yaml should return error, but got %v", k, res)
 		}

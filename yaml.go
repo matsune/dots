@@ -5,11 +5,11 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-func ParseYaml(str string) ([]target, error) {
+func parseYaml(str []byte) ([]target, error) {
 	var y struct {
 		Targets []target `yaml:"targets"`
 	}
-	err := yaml.Unmarshal([]byte(str), &y)
+	err := yaml.Unmarshal(str, &y)
 	if err != nil {
 		return nil, err
 	}
