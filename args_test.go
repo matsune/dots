@@ -5,74 +5,59 @@ import (
 	"testing"
 )
 
-func TestParseSuccess(t *testing.T) {
-
-	type test struct {
-		args   []string
-		expect cmd
-	}
-
-	successTests := map[string]test{
-		"no target": test{
+func TestParse(t *testing.T) {
+	tests := []struct {
+		name    string
+		args    []string
+		want    cmd
+		wantErr bool
+	}{
+		{
+			name: "no target",
 			args: []string{"dots", "matsune/dotfiles"},
-			expect: cmd{
+			want: cmd{
 				Self:    "dots",
 				Repo:    "matsune/dotfiles",
 				Targets: nil,
 			},
-		},
-		"1 target": test{
+			wantErr: false,
+		}, {
+			name: "1 target",
 			args: []string{"dots", "matsune/dotfiles", "vim"},
-			expect: cmd{
+			want: cmd{
 				Self:    "dots",
 				Repo:    "matsune/dotfiles",
 				Targets: []string{"vim"},
 			},
+			wantErr: false,
 		},
-		"2 target": test{
+		{
+			name: "2 target",
 			args: []string{"dots", "matsune/dotfiles", "vim", "zsh", "tmux"},
-			expect: cmd{
+			want: cmd{
 				Self:    "dots",
 				Repo:    "matsune/dotfiles",
 				Targets: []string{"vim", "zsh", "tmux"},
 			},
+			wantErr: false,
+		},
+		// fail tests
+		{
+			name:    "no Repo",
+			args:    []string{"dots"},
+			wantErr: true,
 		},
 	}
-
-	for name, c := range successTests {
-		t.Logf("test [%s]", name)
-		if res, err := Parse(c.args); err != nil {
-			t.Fatal(err)
-		} else {
-			if res.Self != c.expect.Self {
-				t.Errorf("expected Self is %s, but got %s", c.expect.Self, res.Self)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := Parse(tt.args)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-			if res.Repo != c.expect.Repo {
-				t.Errorf("expected Repo is %s, but got %s", c.expect.Repo, res.Repo)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Parse() = %v, want %v", got, tt.want)
 			}
-			if !reflect.DeepEqual(res.Targets, c.expect.Targets) {
-				t.Errorf("expected Targets is %s, but got %s", c.expect.Targets, res.Targets)
-			}
-		}
-	}
-}
-
-func TestParseError(t *testing.T) {
-
-	type test struct {
-		args []string
-	}
-
-	failTests := map[string]test{
-		"no Repo": test{
-			args: []string{"dots"},
-		},
-	}
-
-	for name, c := range failTests {
-		t.Logf("test [%s]", name)
-		if _, err := Parse(c.args); err == nil {
-			t.Fatal("Parse should return error")
-		}
+		})
 	}
 }

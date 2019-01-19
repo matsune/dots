@@ -13,7 +13,7 @@ const (
 )
 
 func usage() {
-	fmt.Println(`Usage:
+	fmt.Print(`Usage:
 	dots REPO [TARGET]
 
 Help Options:

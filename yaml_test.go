@@ -5,76 +5,86 @@ import (
 	"testing"
 )
 
-func TestparseYamlSuccess(t *testing.T) {
-
-	type test struct {
-		str    string
-		expect []target
-	}
-
-	successTests := []test{
-		test{
+func Test_parseYaml(t *testing.T) {
+	tests := []struct {
+		name    string
+		str     string
+		want    []target
+		wantErr bool
+	}{
+		{
+			name: "valid format",
 			str: `
 targets: 
   - dst: ~/.vimrc
     name: vimrc
     src: .vimrc
 `,
-			expect: []target{
+			want: []target{
 				target{
 					Name: "vimrc",
 					Src:  ".vimrc",
 					Dst:  "~/.vimrc",
 				},
 			},
+			wantErr: false,
 		},
-	}
-
-	for _, c := range successTests {
-		res, err := parseYaml([]byte(c.str))
-		if err != nil {
-			t.Error(err)
-		} else {
-			if !reflect.DeepEqual(c.expect, res) {
-				t.Errorf("expected %v, but got %v", c.expect, res)
-			}
-		}
-	}
-}
-
-func TestparseYamlFail(t *testing.T) {
-
-	failTests := map[string]string{
-		"no name": `
-targets: 
+		// - fail tests
+		{
+			name: "no name",
+			str: `
+targets:
   - dst: ~/.vimrc
     src: .vimrc
 `,
-		"no dst": `
-targets: 
+			wantErr: true,
+		},
+		{
+			name: "no dst",
+			str: `
+targets:
   - name: vimrc
     src: .vimrc
 `,
-		"no src": `
-targets: 
-  - dst: ~/.vimrc
-    name: vimrc
-`,
-		"duplicated key": `
+			wantErr: true,
+		},
+		{
+			name: "no src",
+			str: `
 targets:
-	- dst: ~/.vimrc
-	  dst: ~/.vimrc
+  - name: vimrc
+    dst: .vimrc
 `,
-		"invalid format": `
+			wantErr: true,
+		},
+		{
+			name: "duplicated key",
+			str: `
+targets:
+  - dst: ~/.vimrc
+    dst: ~/.vimrc
+`,
+			wantErr: true,
+		},
+		{
+			name: "invalid format",
+			str: `
 - targets
-	- dst: ~/.vimrc
+  - dst: ~/.vimrc
 `,
+			wantErr: true,
+		},
 	}
-
-	for k, c := range failTests {
-		res, err := parseYaml([]byte(c))
-		if err == nil {
-			t.Errorf("[test %s] expected yaml should return error, but got %v", k, res)
-		}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := parseYaml([]byte(tt.str))
+			if (err != nil) != tt.wantErr {
+				t.Errorf("parseYaml() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("parseYaml() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
