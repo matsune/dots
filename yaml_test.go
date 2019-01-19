@@ -60,6 +60,15 @@ targets:
   - dst: ~/.vimrc
     name: vimrc
 `,
+		"duplicated key": `
+targets:
+	- dst: ~/.vimrc
+	  dst: ~/.vimrc
+`,
+		"invalid format": `
+- targets
+	- dst: ~/.vimrc
+`,
 	}
 
 	for k, c := range failTests {
