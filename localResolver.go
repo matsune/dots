@@ -1,45 +1,56 @@
 package dots
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-
-	homedir "github.com/mitchellh/go-homedir"
 )
 
 type localResolver struct {
 	repo string
 }
 
-func (r *localResolver) ReadTargets() ([]target, error) {
-	return r.readDotsYml("")
+func (r *localResolver) Targets() ([]target, error) {
+	return r.targets("")
 }
 
-// Get dots.yml path
+func (r *localResolver) filePath(sub, file string) string {
+	return filepath.Join(r.repo, sub, file)
+}
+
 func (r *localResolver) ymlPath(sub string) string {
-	return filepath.Join(r.repo, sub, "dots.yml")
+	return r.filePath(sub, "dots.yml")
 }
 
-func (r *localResolver) readDotsYml(sub string) ([]target, error) {
+func (r *localResolver) readYml(sub string) ([]byte, error) {
 	p := r.ymlPath(sub)
 	data, err := ioutil.ReadFile(p)
 	if err != nil {
-		return nil, fmt.Errorf("Could not read %s", p)
+		return nil, err
 	}
+	return data, err
+}
+
+func (r *localResolver) targets(sub string) ([]target, error) {
+	data, err := r.readYml(sub)
+	if err != nil {
+		return nil, err
+	}
+
 	yml, err := parseYaml(data)
 	if err != nil {
 		return nil, err
 	}
+
 	for i := range yml.Targets {
 		yml.Targets[i].Sub = sub
 	}
+
 	res := yml.Targets
 	for _, s := range yml.Sub {
 		// recursively read dots.yml of sub directories
-		ts, err := r.readDotsYml(filepath.Join(sub, s))
+		ts, err := r.targets(filepath.Join(sub, s))
 		if err != nil {
 			return nil, err
 		}
@@ -50,27 +61,7 @@ func (r *localResolver) readDotsYml(sub string) ([]target, error) {
 	return res, nil
 }
 
-func (r *localResolver) do(t target) error {
-	filePath := filepath.Join(r.repo, t.File)
-	file, err := os.Open(filePath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	dstPath, err := homedir.Expand(t.Dst)
-	if err != nil {
-		return err
-	}
-	dst, err := os.Create(dstPath)
-	if err != nil {
-		return err
-	}
-	defer dst.Close()
-
-	_, err = io.Copy(dst, file)
-	if err != nil {
-		return err
-	}
-	return nil
+func (r *localResolver) readFile(t target) (io.ReadCloser, error) {
+	filePath := r.filePath(t.Sub, t.File)
+	return os.Open(filePath)
 }

@@ -2,8 +2,10 @@ package dots
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 
+	homedir "github.com/mitchellh/go-homedir"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -18,7 +20,7 @@ func Run(c cmd) int {
 	r = &localResolver{
 		repo: c.Repo,
 	}
-	ts, err := r.ReadTargets()
+	ts, err := r.Targets()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return exitError
@@ -46,7 +48,7 @@ func Run(c cmd) int {
 			if tar != nil {
 				tmap[ct] = *tar
 			} else {
-				fmt.Fprintln(os.Stderr, fmt.Errorf("could not find target %s\n", ct))
+				fmt.Fprintln(os.Stderr, fmt.Errorf("Could not find target %s", ct))
 			}
 		}
 		list := make([]target, 0, len(tmap))
@@ -60,8 +62,22 @@ func Run(c cmd) int {
 func do(ts []target) int {
 	eg := errgroup.Group{}
 	for _, t := range ts {
+		t := t
 		eg.Go(func() error {
-			return r.do(t)
+			reader, err := r.readFile(t)
+			if err != nil {
+				return err
+			}
+			defer reader.Close()
+
+			dstPath, err := homedir.Expand(t.Dst)
+			if err != nil {
+				return err
+			}
+
+			buf, err := ioutil.ReadAll(reader)
+			fmt.Printf("write to %s\n", dstPath)
+			return ioutil.WriteFile(dstPath, buf, 0644)
 		})
 	}
 	if err := eg.Wait(); err != nil {

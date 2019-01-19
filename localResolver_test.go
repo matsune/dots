@@ -47,9 +47,9 @@ func Test_localResolver_readDotsYml(t *testing.T) {
 	r := localResolver{
 		repo: "test_dotfiles",
 	}
-	got, err := r.ReadTargets()
+	got, err := r.Targets()
 	if err != nil {
-		t.Errorf("localResolver.readDotsYml() error = %v", err)
+		t.Errorf("localResolver.Targets() error = %v", err)
 		return
 	}
 
@@ -75,7 +75,7 @@ func Test_localResolver_readDotsYml(t *testing.T) {
 	}
 	t.Run("test_dotfiles", func(t *testing.T) {
 		if !reflect.DeepEqual(got, want) {
-			t.Errorf("ReadTargets() = %v, want %v", got, want)
+			t.Errorf("Targets() = %v, want %v", got, want)
 		}
 	})
 }
