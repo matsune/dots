@@ -12,7 +12,7 @@ func Test_target_validate(t *testing.T) {
 			name: "no name",
 			t: target{
 				Name: "dd",
-				Src:  "aa",
+				File: "aa",
 				Dst:  "bb",
 			},
 			wantErr: false,
@@ -21,8 +21,8 @@ func Test_target_validate(t *testing.T) {
 		{
 			name: "no name",
 			t: target{
-				Src: "aa",
-				Dst: "bb",
+				File: "aa",
+				Dst:  "bb",
 			},
 			wantErr: true,
 		},

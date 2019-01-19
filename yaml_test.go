@@ -18,12 +18,12 @@ func Test_parseYaml(t *testing.T) {
 targets: 
   - dst: ~/.vimrc
     name: vimrc
-    src: .vimrc
+    file: .vimrc
 `,
 			want: []target{
 				target{
 					Name: "vimrc",
-					Src:  ".vimrc",
+					File: ".vimrc",
 					Dst:  "~/.vimrc",
 				},
 			},
@@ -35,7 +35,7 @@ targets:
 			str: `
 targets:
   - dst: ~/.vimrc
-    src: .vimrc
+    file: .vimrc
 `,
 			wantErr: true,
 		},
@@ -44,7 +44,7 @@ targets:
 			str: `
 targets:
   - name: vimrc
-    src: .vimrc
+    file: .vimrc
 `,
 			wantErr: true,
 		},
