@@ -2,15 +2,15 @@ package dots
 
 import "testing"
 
-func Test_target_validate(t *testing.T) {
+func Test_Target_validate(t *testing.T) {
 	tests := []struct {
 		name    string
-		t       target
+		t       Target
 		wantErr bool
 	}{
 		{
 			name: "no name",
-			t: target{
+			t: Target{
 				Name: "dd",
 				File: "aa",
 				Dst:  "bb",
@@ -20,7 +20,7 @@ func Test_target_validate(t *testing.T) {
 		// fail tests
 		{
 			name: "no name",
-			t: target{
+			t: Target{
 				File: "aa",
 				Dst:  "bb",
 			},
@@ -30,7 +30,7 @@ func Test_target_validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := tt.t.validate(); (err != nil) != tt.wantErr {
-				t.Errorf("target.validate() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Target.validate() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

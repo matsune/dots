@@ -1,4 +1,4 @@
-package dots
+package main
 
 import (
 	"reflect"
@@ -9,35 +9,35 @@ func TestParse(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    []string
-		want    cmd
+		want    cmdArgs
 		wantErr bool
 	}{
 		{
 			name: "no target",
 			args: []string{"dots", "matsune/dotfiles"},
-			want: cmd{
-				Self:    "dots",
-				Repo:    "matsune/dotfiles",
-				Targets: nil,
+			want: cmdArgs{
+				cmd:     "dots",
+				repo:    "matsune/dotfiles",
+				targets: nil,
 			},
 			wantErr: false,
 		}, {
 			name: "1 target",
 			args: []string{"dots", "matsune/dotfiles", "vim"},
-			want: cmd{
-				Self:    "dots",
-				Repo:    "matsune/dotfiles",
-				Targets: []string{"vim"},
+			want: cmdArgs{
+				cmd:     "dots",
+				repo:    "matsune/dotfiles",
+				targets: []string{"vim"},
 			},
 			wantErr: false,
 		},
 		{
 			name: "2 target",
 			args: []string{"dots", "matsune/dotfiles", "vim", "zsh", "tmux"},
-			want: cmd{
-				Self:    "dots",
-				Repo:    "matsune/dotfiles",
-				Targets: []string{"vim", "zsh", "tmux"},
+			want: cmdArgs{
+				cmd:     "dots",
+				repo:    "matsune/dotfiles",
+				targets: []string{"vim", "zsh", "tmux"},
 			},
 			wantErr: false,
 		},
@@ -50,7 +50,7 @@ func TestParse(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Parse(tt.args)
+			got, err := parse(tt.args)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)
 				return

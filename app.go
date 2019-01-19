@@ -14,11 +14,15 @@ const (
 	exitError
 )
 
-var r resolver
+var r Resolver
 
-func Run(c cmd) int {
-	r = &localResolver{
-		repo: c.Repo,
+func SetResolver(res Resolver) {
+	r = res
+}
+
+func Run(repo string, targets []string) int {
+	if r == nil {
+		r = NewGithubResolver(repo)
 	}
 	ts, err := r.Targets()
 	if err != nil {
@@ -26,19 +30,19 @@ func Run(c cmd) int {
 		return exitError
 	}
 
-	if len(c.Targets) == 0 {
+	if len(targets) == 0 {
 		// do all targets
 		return do(ts)
 	} else {
 		// do specific targets
-		tmap := map[string]target{}
-		for _, ct := range c.Targets {
+		tmap := map[string]Target{}
+		for _, ct := range targets {
 			if _, ok := tmap[ct]; ok {
 				// already added
 				continue
 			}
 
-			var tar *target
+			var tar *Target
 			for _, t := range ts {
 				if t.Name == ct {
 					tar = &t
@@ -51,7 +55,7 @@ func Run(c cmd) int {
 				fmt.Fprintln(os.Stderr, fmt.Errorf("Could not find target %s", ct))
 			}
 		}
-		list := make([]target, 0, len(tmap))
+		list := make([]Target, 0, len(tmap))
 		for _, t := range tmap {
 			list = append(list, t)
 		}
@@ -59,12 +63,12 @@ func Run(c cmd) int {
 	}
 }
 
-func do(ts []target) int {
+func do(ts []Target) int {
 	eg := errgroup.Group{}
 	for _, t := range ts {
 		t := t
 		eg.Go(func() error {
-			reader, err := r.readFile(t)
+			reader, err := r.ReadFile(t)
 			if err != nil {
 				return err
 			}

@@ -5,11 +5,11 @@ import (
 	"testing"
 )
 
-func Test_parseYaml(t *testing.T) {
+func Test_ParseYaml(t *testing.T) {
 	tests := []struct {
 		name    string
 		str     string
-		want    yamlFile
+		want    YamlFile
 		wantErr bool
 	}{
 		{
@@ -20,9 +20,9 @@ targets:
     name: vimrc
     file: .vimrc
 `,
-			want: yamlFile{
-				Targets: []target{
-					target{
+			want: YamlFile{
+				Targets: []Target{
+					Target{
 						Name: "vimrc",
 						File: ".vimrc",
 						Dst:  "~/.vimrc",
@@ -38,7 +38,7 @@ sub:
   - a
   - ./b
 `,
-			want: yamlFile{
+			want: YamlFile{
 				Sub: []string{"a", "./b"},
 			},
 		},
@@ -90,9 +90,9 @@ targets:
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := parseYaml([]byte(tt.str))
+			got, err := ParseYaml([]byte(tt.str))
 			if (err != nil) != tt.wantErr {
-				t.Errorf("parseYaml() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ParseYaml() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {

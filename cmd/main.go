@@ -29,13 +29,18 @@ func main() {
 		}
 	}
 
-	cmd, err := dots.Parse(os.Args)
+	c, err := parse(os.Args)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		usage()
 		os.Exit(exitError)
 	}
 
-	exit := dots.Run(cmd)
+	// - FIXME: localResolver is for dev
+	dots.SetResolver(&localResolver{
+		repo: c.repo,
+	})
+
+	exit := dots.Run(c.repo, c.targets)
 	os.Exit(exit)
 }

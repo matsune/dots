@@ -1,17 +1,19 @@
-package dots
+package main
 
 import (
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/matsune/dots"
 )
 
 type localResolver struct {
 	repo string
 }
 
-func (r *localResolver) Targets() ([]target, error) {
+func (r *localResolver) Targets() ([]dots.Target, error) {
 	return r.targets("")
 }
 
@@ -23,7 +25,7 @@ func (r *localResolver) ymlPath(sub string) string {
 	return r.filePath(sub, "dots.yml")
 }
 
-func (r *localResolver) readYml(sub string) ([]byte, error) {
+func (r *localResolver) ReadYml(sub string) ([]byte, error) {
 	p := r.ymlPath(sub)
 	data, err := ioutil.ReadFile(p)
 	if err != nil {
@@ -32,13 +34,13 @@ func (r *localResolver) readYml(sub string) ([]byte, error) {
 	return data, err
 }
 
-func (r *localResolver) targets(sub string) ([]target, error) {
-	data, err := r.readYml(sub)
+func (r *localResolver) targets(sub string) ([]dots.Target, error) {
+	data, err := r.ReadYml(sub)
 	if err != nil {
 		return nil, err
 	}
 
-	yml, err := parseYaml(data)
+	yml, err := dots.ParseYaml(data)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +63,7 @@ func (r *localResolver) targets(sub string) ([]target, error) {
 	return res, nil
 }
 
-func (r *localResolver) readFile(t target) (io.ReadCloser, error) {
+func (r *localResolver) ReadFile(t dots.Target) (io.ReadCloser, error) {
 	filePath := r.filePath(t.Sub, t.File)
 	return os.Open(filePath)
 }

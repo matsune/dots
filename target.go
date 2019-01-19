@@ -2,14 +2,14 @@ package dots
 
 import "fmt"
 
-type target struct {
+type Target struct {
 	Name string `yaml:"name"`
 	File string `yaml:"file"`
 	Dst  string `yaml:"dst"`
 	Sub  string
 }
 
-func (t target) validate() error {
+func (t Target) validate() error {
 	if len(t.Name) == 0 {
 		return fmt.Errorf("target's name is empty")
 	}

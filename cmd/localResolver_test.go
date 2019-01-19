@@ -1,8 +1,10 @@
-package dots
+package main
 
 import (
 	"reflect"
 	"testing"
+
+	"github.com/matsune/dots"
 )
 
 func Test_localResolver_ymlPath(t *testing.T) {
@@ -45,7 +47,7 @@ func Test_localResolver_ymlPath(t *testing.T) {
 
 func Test_localResolver_readDotsYml(t *testing.T) {
 	r := localResolver{
-		repo: "test_dotfiles",
+		repo: "../test_dotfiles",
 	}
 	got, err := r.Targets()
 	if err != nil {
@@ -53,11 +55,11 @@ func Test_localResolver_readDotsYml(t *testing.T) {
 		return
 	}
 
-	want := []target{
+	want := []dots.Target{
 		{
 			Name: "vimrc",
 			File: "./.vimrc",
-			Dst:  "/tmp/dots.vimrc",
+			Dst:  "~/go/src/github.com/matsune/dots/.vimrc",
 			Sub:  "",
 		},
 		{
