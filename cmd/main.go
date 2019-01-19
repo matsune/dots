@@ -12,11 +12,30 @@ const (
 	exitError
 )
 
+func usage() {
+	fmt.Println(`Usage:
+	dots REPO [TARGET]
+
+Help Options:
+	-h, --help		Show this help message
+`)
+}
+
 func main() {
+	for _, arg := range os.Args {
+		if arg == "-h" || arg == "--help" {
+			usage()
+			os.Exit(exitOK)
+		}
+	}
+
 	cmd, err := dots.Parse(os.Args)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
+		usage()
 		os.Exit(exitError)
 	}
-	fmt.Println(cmd)
+
+	exit := dots.Run(cmd)
+	os.Exit(exit)
 }
