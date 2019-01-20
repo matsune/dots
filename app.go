@@ -21,49 +21,19 @@ func SetResolver(res Resolver) {
 	r = res
 }
 
-func Run(repo string, targets, tags []string) int {
-	if r == nil {
-		r = NewGithubResolver(repo)
-	}
-	ts, err := getTargets("")
+func Run(targets, tags []string) int {
+	all, err := getTargets("")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return exitError
 	}
 
-	if len(targets) == 0 {
-		// do all targets
-		return doTargets(ts)
-	} else {
-		// do specific targets
-		tmap := map[string]Target{}
-		for _, ct := range targets {
-			if _, ok := tmap[ct]; ok {
-				// already added
-				continue
-			}
-
-			var tar *Target
-			for _, t := range ts {
-				if t.Name == ct {
-					tar = &t
-					break
-				}
-			}
-			if tar != nil {
-				tmap[ct] = *tar
-			} else {
-				fmt.Fprintln(os.Stderr, fmt.Errorf("Could not find target %s", ct))
-			}
-		}
-		list := make([]Target, 0, len(tmap))
-		for _, t := range tmap {
-			list = append(list, t)
-		}
-		return doTargets(list)
-	}
+	ts := filter(all, targets, tags)
+	return doTargets(ts)
 }
 
+// Read dots.yml under sub directory and return targets.
+// This method will be called recursively if sub directory has dots.yml.
 func getTargets(sub string) ([]Target, error) {
 	reader, err := r.ReadFile(sub, "dots.yml")
 	if err != nil {
@@ -87,7 +57,6 @@ func getTargets(sub string) ([]Target, error) {
 
 	res := yml.Targets
 	for _, s := range yml.Sub {
-		// recursively read dots.yml of sub directories
 		ts, err := getTargets(filepath.Join(sub, s))
 		if err != nil {
 			return nil, err

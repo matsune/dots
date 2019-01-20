@@ -2,5 +2,7 @@ targets:
   - name: vimrc
     file: ./.vimrc
     dst: ~/go/src/github.com/matsune/dots/.vimrc
+    tags:
+      - all
 sub:
   - ./zsh

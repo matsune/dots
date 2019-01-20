@@ -49,6 +49,7 @@ func main() {
 	repo := args[0]
 	targets := args[1:len(args)]
 
-	exit := dots.Run(repo, targets, opts.Tags)
+	dots.SetResolver(dots.NewGithubResolver(repo))
+	exit := dots.Run(targets, opts.Tags)
 	os.Exit(exit)
 }

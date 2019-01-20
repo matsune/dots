@@ -6,15 +6,15 @@ import (
 	"path/filepath"
 )
 
-type localResolver struct {
-	repo string
+type LocalResolver struct {
+	Repo string
 }
 
-func (r *localResolver) ReadFile(sub, file string) (io.ReadCloser, error) {
+func (r *LocalResolver) ReadFile(sub, file string) (io.ReadCloser, error) {
 	filePath := r.filePath(sub, file)
 	return os.Open(filePath)
 }
 
-func (r *localResolver) filePath(sub, file string) string {
-	return filepath.Join(r.repo, sub, file)
+func (r *LocalResolver) filePath(sub, file string) string {
+	return filepath.Join(r.Repo, sub, file)
 }
