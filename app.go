@@ -33,7 +33,7 @@ func Run(repo string, targets []string) int {
 
 	if len(targets) == 0 {
 		// do all targets
-		return do(ts)
+		return doTargets(ts)
 	} else {
 		// do specific targets
 		tmap := map[string]Target{}
@@ -60,7 +60,7 @@ func Run(repo string, targets []string) int {
 		for _, t := range tmap {
 			list = append(list, t)
 		}
-		return do(list)
+		return doTargets(list)
 	}
 }
 
@@ -99,25 +99,12 @@ func getTargets(sub string) ([]Target, error) {
 	return res, nil
 }
 
-func do(ts []Target) int {
+func doTargets(ts []Target) int {
 	eg := errgroup.Group{}
 	for _, t := range ts {
-		t := t
+		_t := t
 		eg.Go(func() error {
-			reader, err := r.ReadFile(t.Sub, t.File)
-			if err != nil {
-				return err
-			}
-			defer reader.Close()
-
-			dstPath, err := homedir.Expand(t.Dst)
-			if err != nil {
-				return err
-			}
-
-			buf, err := ioutil.ReadAll(reader)
-			fmt.Printf("write to %s\n", dstPath)
-			return ioutil.WriteFile(dstPath, buf, 0644)
+			return doTarget(_t)
 		})
 	}
 	if err := eg.Wait(); err != nil {
@@ -125,4 +112,21 @@ func do(ts []Target) int {
 		return exitError
 	}
 	return exitOK
+}
+
+func doTarget(t Target) error {
+	reader, err := r.ReadFile(t.Sub, t.File)
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
+
+	dstPath, err := homedir.Expand(t.Dst)
+	if err != nil {
+		return err
+	}
+
+	buf, err := ioutil.ReadAll(reader)
+	fmt.Printf("write to %s\n", dstPath)
+	return ioutil.WriteFile(dstPath, buf, 0644)
 }

@@ -22,7 +22,10 @@ func NewGithubResolver(repo string) *GithubResolver {
 }
 
 func (r *GithubResolver) ReadFile(sub, file string) (io.ReadCloser, error) {
-	url := r.url(sub, file)
+	url, err := r.url(sub, file)
+	if err != nil {
+		return nil, err
+	}
 	resp, err := http.Get(url.String())
 	if err != nil {
 		return nil, err
@@ -30,11 +33,11 @@ func (r *GithubResolver) ReadFile(sub, file string) (io.ReadCloser, error) {
 	return resp.Body, nil
 }
 
-func (r *GithubResolver) url(sub, file string) *url.URL {
+func (r *GithubResolver) url(sub, file string) (*url.URL, error) {
 	u, err := url.Parse(r.host)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	u.Path = path.Join(u.Path, r.repo, r.branch, sub, file)
-	return u
+	return u, nil
 }
