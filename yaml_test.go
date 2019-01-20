@@ -19,6 +19,9 @@ targets:
   - dst: ~/.vimrc
     name: vimrc
     file: .vimrc
+    tags:
+      - a
+      - b
 `,
 			want: YamlFile{
 				Targets: []Target{
@@ -26,6 +29,7 @@ targets:
 						Name: "vimrc",
 						File: ".vimrc",
 						Dst:  "~/.vimrc",
+						Tags: []string{"a", "b"},
 					},
 				},
 			},

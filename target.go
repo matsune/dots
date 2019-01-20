@@ -3,9 +3,10 @@ package dots
 import "fmt"
 
 type Target struct {
-	Name string `yaml:"name"`
-	File string `yaml:"file"`
-	Dst  string `yaml:"dst"`
+	Name string   `yaml:"name"`
+	File string   `yaml:"file"`
+	Dst  string   `yaml:"dst"`
+	Tags []string `yaml:"tags"`
 	Sub  string
 }
 

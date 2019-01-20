@@ -14,6 +14,17 @@ func Test_Target_validate(t *testing.T) {
 				Name: "dd",
 				File: "aa",
 				Dst:  "bb",
+				Tags: []string{"a", "b"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "no tags",
+			t: Target{
+				Name: "dd",
+				File: "aa",
+				Dst:  "bb",
+				Tags: []string{},
 			},
 			wantErr: false,
 		},
