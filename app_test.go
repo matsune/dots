@@ -35,8 +35,8 @@ func TestSetResolver(t *testing.T) {
 }
 
 func Test_doTarget(t *testing.T) {
-	SetResolver(&localResolver{
-		repo: "test_dotfiles",
+	SetResolver(&LocalResolver{
+		Repo: "test_dotfiles",
 	})
 
 	tests := []struct {
