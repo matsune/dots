@@ -21,7 +21,7 @@ func SetResolver(res Resolver) {
 	r = res
 }
 
-func Run(repo string, targets []string) int {
+func Run(repo string, targets, tags []string) int {
 	if r == nil {
 		r = NewGithubResolver(repo)
 	}

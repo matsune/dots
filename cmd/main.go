@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	flags "github.com/jessevdk/go-flags"
 	"github.com/matsune/dots"
 )
 
@@ -12,30 +13,42 @@ const (
 	exitError
 )
 
-func usage() {
-	fmt.Print(`Usage:
-	dots REPO [TARGET]
+const version = "1.0"
 
-Help Options:
-	-h, --help		Show this help message
-`)
+type options struct {
+	Version bool     `short:"v" long:"version" description:"Show version"`
+	Tags    []string `short:"t" long:"tag" description:"Tag of targets"`
 }
 
+var opts options
+
+var parser = flags.NewParser(&opts, flags.Default)
+
 func main() {
-	for _, arg := range os.Args {
-		if arg == "-h" || arg == "--help" {
-			usage()
+	parser.Usage = "[OPTIONS] REPO [TARGETS]"
+	args, err := parser.Parse()
+	if err != nil {
+		if flagsErr, ok := err.(*flags.Error); ok && flagsErr.Type == flags.ErrHelp {
 			os.Exit(exitOK)
+		} else {
+			fmt.Fprint(os.Stderr, err)
+			os.Exit(exitError)
 		}
 	}
 
-	c, err := parse(os.Args)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		usage()
+	if opts.Version {
+		fmt.Printf("Version %s\n", version)
+		os.Exit(exitOK)
+	}
+
+	if len(args) == 0 {
+		fmt.Fprintln(os.Stderr, "REPO is not passed")
 		os.Exit(exitError)
 	}
 
-	exit := dots.Run(c.repo, c.targets)
+	repo := args[0]
+	targets := args[1:len(args)]
+
+	exit := dots.Run(repo, targets, opts.Tags)
 	os.Exit(exit)
 }
