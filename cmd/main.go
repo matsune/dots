@@ -37,9 +37,9 @@ func main() {
 	}
 
 	// - FIXME: localResolver is for dev
-	dots.SetResolver(&localResolver{
-		repo: c.repo,
-	})
+	// dots.SetResolver(&localResolver{
+	// 	repo: c.repo,
+	// })
 
 	exit := dots.Run(c.repo, c.targets)
 	os.Exit(exit)

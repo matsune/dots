@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"golang.org/x/sync/errgroup"
@@ -24,7 +25,7 @@ func Run(repo string, targets []string) int {
 	if r == nil {
 		r = NewGithubResolver(repo)
 	}
-	ts, err := r.Targets()
+	ts, err := getTargets("")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return exitError
@@ -63,12 +64,47 @@ func Run(repo string, targets []string) int {
 	}
 }
 
+func getTargets(sub string) ([]Target, error) {
+	reader, err := r.ReadFile(sub, "dots.yml")
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+
+	data, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return nil, err
+	}
+
+	yml, err := ParseYaml(data)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range yml.Targets {
+		yml.Targets[i].Sub = sub
+	}
+
+	res := yml.Targets
+	for _, s := range yml.Sub {
+		// recursively read dots.yml of sub directories
+		ts, err := getTargets(filepath.Join(sub, s))
+		if err != nil {
+			return nil, err
+		}
+		for _, t := range ts {
+			res = append(res, t)
+		}
+	}
+	return res, nil
+}
+
 func do(ts []Target) int {
 	eg := errgroup.Group{}
 	for _, t := range ts {
 		t := t
 		eg.Go(func() error {
-			reader, err := r.ReadFile(t)
+			reader, err := r.ReadFile(t.Sub, t.File)
 			if err != nil {
 				return err
 			}
