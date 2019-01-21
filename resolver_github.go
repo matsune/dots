@@ -1,6 +1,7 @@
 package dots
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -27,10 +28,12 @@ func (r *GithubResolver) ReadFile(sub, file string) (io.ReadCloser, error) {
 		return nil, err
 	}
 	resp, err := http.Get(url.String())
-	if err != nil {
+	if resp.StatusCode == 200 {
+		return resp.Body, nil
+	} else if err != nil {
 		return nil, err
 	}
-	return resp.Body, nil
+	return nil, fmt.Errorf(resp.Status)
 }
 
 func (r *GithubResolver) url(sub, file string) (*url.URL, error) {
