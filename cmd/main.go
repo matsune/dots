@@ -17,7 +17,8 @@ const version = "1.0"
 
 type options struct {
 	Version bool     `short:"v" long:"version" description:"Show version"`
-	Tags    []string `short:"t" long:"tag" description:"Tag of targets"`
+	Tags    []string `short:"t" long:"tag" description:"Filtering tag"`
+	Force   bool     `short:"f" long:"force" description:"Override file"`
 }
 
 var opts options
@@ -50,6 +51,7 @@ func main() {
 	targets := args[1:len(args)]
 
 	dots.SetResolver(dots.NewGithubResolver(repo))
+	dots.SetForce(opts.Force)
 	exit := dots.Run(targets, opts.Tags)
 	os.Exit(exit)
 }

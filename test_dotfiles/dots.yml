@@ -1,7 +1,7 @@
 targets:
   - name: vimrc
     file: ./.vimrc
-    dst: ~/go/src/github.com/matsune/dots/.vimrc
+    dst: ~/go/src/github.com/matsune/dots/aa/.vimrc
     tags:
       - all
 sub:

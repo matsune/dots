@@ -5,9 +5,9 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sync"
 
 	homedir "github.com/mitchellh/go-homedir"
-	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -15,10 +15,17 @@ const (
 	exitError
 )
 
-var r Resolver
+var (
+	r     Resolver
+	force bool
+)
 
 func SetResolver(res Resolver) {
 	r = res
+}
+
+func SetForce(f bool) {
+	force = f
 }
 
 func Run(targets, tags []string) int {
@@ -29,7 +36,8 @@ func Run(targets, tags []string) int {
 	}
 
 	ts := filter(all, targets, tags)
-	return doTargets(ts)
+	doTargets(ts)
+	return exitOK
 }
 
 // Read dots.yml under sub directory and return targets.
@@ -68,34 +76,69 @@ func getTargets(sub string) ([]Target, error) {
 	return res, nil
 }
 
-func doTargets(ts []Target) int {
-	eg := errgroup.Group{}
+func doTargets(ts []Target) {
+	wg := &sync.WaitGroup{}
+	var dones struct {
+		paths []string
+		mux   sync.Mutex
+	}
+	var errs struct {
+		errors []error
+		mux    sync.Mutex
+	}
 	for _, t := range ts {
-		_t := t
-		eg.Go(func() error {
-			return doTarget(_t)
-		})
+		wg.Add(1)
+		go func(tar Target) {
+			defer wg.Done()
+
+			if dstPath, err := doTarget(tar); err != nil {
+				errs.mux.Lock()
+				errs.errors = append(errs.errors, err)
+				errs.mux.Unlock()
+			} else {
+				dones.mux.Lock()
+				dones.paths = append(dones.paths, dstPath)
+				dones.mux.Unlock()
+			}
+		}(t)
 	}
-	if err := eg.Wait(); err != nil {
+	wg.Wait()
+
+	for _, p := range dones.paths {
+		fmt.Printf("write to %s\n", p)
+	}
+	for _, err := range errs.errors {
 		fmt.Fprintln(os.Stderr, err)
-		return exitError
 	}
-	return exitOK
 }
 
-func doTarget(t Target) error {
+func doTarget(t Target) (string, error) {
 	reader, err := r.ReadFile(t.Sub, t.File)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer reader.Close()
 
 	dstPath, err := homedir.Expand(t.Dst)
 	if err != nil {
-		return err
+		return "", err
+	}
+
+	if _, err := os.Stat(dstPath); err != nil {
+		dstDir := filepath.Dir(dstPath)
+		if _, err := os.Stat(dstDir); err != nil {
+			err = os.MkdirAll(dstDir, os.ModePerm)
+			if err != nil {
+				return "", err
+			}
+		}
+	} else {
+		if !force {
+			return "", fmt.Errorf("already exists %s", dstPath)
+		}
 	}
 
 	buf, err := ioutil.ReadAll(reader)
-	fmt.Printf("write to %s\n", dstPath)
-	return ioutil.WriteFile(dstPath, buf, 0644)
+
+	return dstPath, ioutil.WriteFile(dstPath, buf, os.ModePerm)
 }
